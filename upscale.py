@@ -157,7 +157,9 @@ class Upscale:
         images: List[Path] = []
         # List of extensions: https://docs.opencv.org/4.x/d4/da8/group__imgcodecs.html#ga288b8b3da0892bd651fce07b3bbd3a56
         # Also gif and tga which seem to be supported as well though are undocumented.
-        for ext in [
+
+        # Now ESRGAN doesn't ignore files with extensions like .JPG
+        extensions = [
             "bmp",
             "dib",
             "jpeg",
@@ -181,8 +183,11 @@ class Upscale:
             "pic",
             "gif",
             "tga",
-        ]:
-            images.extend(self.input.glob(f"**/*.{ext}"))
+        ]
+
+        for file in self.input.glob("**/*.*"):
+            if file.suffix.lower()[1:] in extensions:
+                images.append(file)
 
         # Store the maximum split depths for each model in the chain
         # TODO: there might be a better way of doing this but it's good enough for now
