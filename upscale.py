@@ -117,7 +117,6 @@ class Upscale:
         )
 
         for idx, model in enumerate(model_chain):
-
             interpolations = (
                 model.split("|") if "|" in self.model_str else model.split("&")
             )
@@ -158,7 +157,31 @@ class Upscale:
         images: List[Path] = []
         # List of extensions: https://docs.opencv.org/4.x/d4/da8/group__imgcodecs.html#ga288b8b3da0892bd651fce07b3bbd3a56
         # Also gif and tga which seem to be supported as well though are undocumented.
-        for ext in ["bmp", "dib", "jpeg", "jpg", "jpe", "jp2", "png", "webp", "pbm", "pgm", "ppm", "pxm", "pnm", "pfm", "sr", "ras", "tiff", "tif", "exr", "hdr", "pic", "gif", "tga"]:
+        for ext in [
+            "bmp",
+            "dib",
+            "jpeg",
+            "jpg",
+            "jpe",
+            "jp2",
+            "png",
+            "webp",
+            "pbm",
+            "pgm",
+            "ppm",
+            "pxm",
+            "pnm",
+            "pfm",
+            "sr",
+            "ras",
+            "tiff",
+            "tif",
+            "exr",
+            "hdr",
+            "pic",
+            "gif",
+            "tga",
+        ]:
             images.extend(self.input.glob(f"**/*.{ext}"))
 
         # Store the maximum split depths for each model in the chain
@@ -191,7 +214,10 @@ class Upscale:
                 # read image
                 # We use imdecode instead of imread to work around Unicode breakage on Windows.
                 # See https://jdhao.github.io/2019/09/11/opencv_unicode_image_path/
-                img = cv2.imdecode(np.fromfile(str(img_path.absolute()), dtype=np.uint8), cv2.IMREAD_UNCHANGED)
+                img = cv2.imdecode(
+                    np.fromfile(str(img_path.absolute()), dtype=np.uint8),
+                    cv2.IMREAD_UNCHANGED,
+                )
                 if len(img.shape) < 3:
                     img = cv2.cvtColor(img, cv2.COLOR_GRAY2BGR)
 
@@ -217,7 +243,6 @@ class Upscale:
                         total=len(model_chain),
                     )
                 for i, model_path in enumerate(model_chain):
-
                     img_height, img_width = img.shape[:2]
 
                     # Load the model so we can access the scale
@@ -250,7 +275,7 @@ class Upscale:
                 # See https://jdhao.github.io/2019/09/11/opencv_unicode_image_path/
                 is_success, im_buf_arr = cv2.imencode(".png", rlt)
                 if not is_success:
-                    raise Exception('cv2.imencode failure')
+                    raise Exception("cv2.imencode failure")
                 im_buf_arr.tofile(str(img_output_path_rel.absolute()))
 
                 if self.delete_input:
@@ -373,7 +398,6 @@ class Upscale:
             and self.last_in_nc == 3
             and self.last_out_nc == 3
         ):
-
             # Fill alpha with white and with black, remove the difference
             if self.alpha_mode == AlphaOptions.BG_DIFFERENCE:
                 img1 = np.copy(img[:, :, :3])
@@ -546,9 +570,10 @@ def main(
         help="Verbose mode",
     ),
 ):
-
     logging.basicConfig(
-        level=logging.DEBUG if verbose else logging.WARNING,
+        # On Google Colab additional messages override the progressbar, so now
+        # the logging level by default is set to ERROR.
+        level=logging.DEBUG if verbose else logging.ERROR,
         format="%(message)s",
         datefmt="[%X]",
         handlers=[RichHandler(markup=True)],
