@@ -333,8 +333,8 @@ class Upscale:
                 "&" in model_path or "|" in model_path
             ):
                 interps = model_path.split("&")[:2]
-                model_1 = torch.load(interps[0].split("@")[0])
-                model_2 = torch.load(interps[1].split("@")[0])
+                model_1 = torch.load(interps[0].split("@")[0], weights_only=False)
+                model_2 = torch.load(interps[1].split("@")[0], weights_only=False)
                 state_dict = OrderedDict()
                 for k, v_1 in model_1.items():
                     v_2 = model_2[k]
@@ -342,7 +342,7 @@ class Upscale:
                         int(interps[1].split("@")[1]) / 100
                     ) * v_2
             else:
-                state_dict = torch.load(model_path)
+                state_dict = torch.load(model_path, weights_only=False)
 
             # SRVGGNet Real-ESRGAN (v2)
             if (
